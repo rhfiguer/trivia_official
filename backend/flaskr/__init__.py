@@ -112,27 +112,59 @@ def create_app(test_config=None):
       abort(422)
 
 
+  #TODO (6/10): Create an endpoint to POST a new question, 
+  #which will require the question and answer text, category, and difficulty score.
+
+  #TEST: When you submit a question on the "Add" tab, 
+  #the form will clear and the question will appear at the end of the last page
+  #of the questions list in the "List" tab.  
+  # 
+ @app.route('/questions/add', methods=['POST'])
+   def add_question():
+     try:
+       data=request.get_json()
+       new_question   = data.get('question', None)
+       new_answer     = data.get('answer', None)
+       new_difficulty = data.get('difficulty', None)
+       new_category   = data.get('category', None)
+
+       
+       # Handle error 404
+       if question is None:
+         abort(404)
+       
+       question.insert()
+
+       # Paginate
+       page = request.args.get('page', 1, type=int)
+       start = (page-1) * QUESTIONS_PER_PAGE
+       end = start + QUESTIONS_PER_PAGE
+       
+       # Display categories
+       categories = Category.query.all()
+       disc_categories = {category.id:category.type for category in categories}
+       
+       # Display questions
+       questions = Question.query.all()
+       formatted_questions = [question.format() for question in    questions]
+       
+       # Return jsonify to frontend
+       return jsonify({
+           'success': True,
+           'questions': formatted_questions[start:end],
+           'total_questions': len(formatted_questions),
+           'categories': disc_categories,
+           'current_category': None
+       })
+     #Handle error 422
+     except:
+       abort(422)
 
 
 
 
 
 
-
-
-
-
-
-  '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
-
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
 
   '''
   @TODO: 
