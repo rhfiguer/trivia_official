@@ -6,7 +6,7 @@ import random
 
 from models import setup_db, Question, Category
 
-QUESTIONS_PER_PAGE = 10
+QUESTIONS_PER_PAGE = 5
 
 # TODO (1/10): Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
 
@@ -31,27 +31,40 @@ def create_app(test_config=None):
   def get_categories():
     # No pagination
     categories = Category.query.all()
-    formatted_categories = [categories.format() for category in categories]
+    formatted_categories = {category.id: category.type for category in categories} # Changed method. Source here: https://knowledge.udacity.com/questions/503892
+    #formatted_categories = [categories.format() for category in categories]
     return jsonify({
       'success': True,
       'categories': formatted_categories,
       'total_categories': len(formatted_categories)
     })
 
+#@app.route('/categories')
+#def get_categories():
+#  # No pagination
+#  categories = Category.query.all()
+#  categories_dict = {}
+#  
+#  return jsonify({
+#    'success': True,
+#    'categories': formatted_categories,
+#    'total_categories': len(formatted_categories)
+#  })
 
-  '''
-  @TODO (4/10): 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
 
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
-  @app.route('/questions/')
+
+  #TODO (4/10): Create an endpoint to handle GET requests for questions, 
+                #including pagination (every 10 questions). 
+                #This endpoint should return a list of questions, 
+                #number of total questions, current category, categories. 
+
+  #TEST: At this point, when you start the application
+  #you should see questions and categories generated,
+  #ten questions per page and pagination at the bottom of the screen for three pages.
+  #Clicking on the page numbers should update the questions. 
+
+'''
+  @app.route('/questions')
   def get_questions():
     #pagination
     page = request.args.get('page', 1, type=int)
@@ -60,19 +73,52 @@ def create_app(test_config=None):
     
     # To get 'categories'
     categories = Category.query.all()
-    formatted_categories = [category.format() for category in categories]
+    #formatted_categories = [category.format() for category in categories]
+    disc_categories = {category.id:category.type for category in categories}
+
     # To get 'current_category'
    #category = Category.query.filter(Category.id==category_id).one_or_none()
     # To get 'questions' and 'total_questions'
     questions = Question.query.all()
     formatted_questions = [question.format() for question in questions]
+
     return jsonify({
       'success': True,
       'questions': formatted_questions[start:end],
       'total_questions': len(formatted_questions),
-      'current_category':None,
-      'categories': formatted_categories
+      'categories': disc_categories,
+      'current_category':None
+      
     })
+  '''
+  
+  @app.route('/questions')
+  def get_questions():
+      page = request.args.get('page', 1, type=int)
+      start = (page-1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
+      categories = Category.query.all()
+      formatted_categories = {category.id: category.type for category in categories}
+      questions = Question.query.all()
+      formatted_questions = [question.format() for question in    questions]
+      return jsonify({
+          'success': True,
+          'questions': formatted_questions[start:end],
+          'total_questions': len(formatted_questions),
+          'categories': formatted_categories,
+          'current_category': None
+      })
+
+
+
+
+
+
+
+
+
+
+
 
 
   '''
