@@ -14,12 +14,10 @@ def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
-  CORS(app)
+  #CORS(app)
   #CORS(app, resources={"r*/api/*": {"origins": "*"}})
-  #cors = CORS(app, resources={r"/*": {"origins": "*"}})
-
-  
-
+  cors = CORS(app, resources={r"*": {"origins": "*"}})
+ 
 # TODO (2/10): Use the after_request decorator to set Access-Control-Allow
 
   @app.after_request
@@ -34,11 +32,13 @@ def create_app(test_config=None):
   def get_categories():
     # No pagination
     categories = Category.query.all()
-    formatted_categories = {category.id: category.type for category in categories} # Changed method. Source here: https://knowledge.udacity.com/questions/503892
-    #formatted_categories = [categories.format() for category in categories]
+    disc_categories = {category.id: category.type for category in categories} # Changed method. Source here: https://knowledge.udacity.com/questions/503892
+   
+    
     return jsonify({
       'success': True,
-      'categories': formatted_categories
+      'categories': disc_categories,
+      'current_category': None
     })
 
 
@@ -50,7 +50,8 @@ def create_app(test_config=None):
   #ten questions per page and pagination at the bottom of the screen for three pages.
   #Clicking on the page numbers should update the questions. 
   
-  @app.route('/questions/')
+
+  @app.route('/questions', methods=['GET'])
   def get_questions():
     #pagination
     page = request.args.get('page', 1, type=int)
@@ -111,7 +112,6 @@ def create_app(test_config=None):
     except:
       abort(422)
 
-
   #TODO (6/10): Create an endpoint to POST a new question, 
   #which will require the question and answer text, category, and difficulty score.
 
@@ -119,92 +119,84 @@ def create_app(test_config=None):
   #the form will clear and the question will appear at the end of the last page
   #of the questions list in the "List" tab.  
   # 
- @app.route('/questions/add', methods=['POST'])
-   def add_question():
-     try:
-       data=request.get_json()
-       new_question   = data.get('question', None)
-       new_answer     = data.get('answer', None)
-       new_difficulty = data.get('difficulty', None)
-       new_category   = data.get('category', None)
+  @app.route('/questions', methods=['POST'])
+  def add_question():
+    try:
+      data=request.get_json()
+      new_question   = data.get('question', None)
+      new_answer     = data.get('answer', None)
+      new_difficulty = data.get('difficulty', None)
+      new_category   = data.get('category', None)
 
-       
-       # Handle error 404
-       if question is None:
-         abort(404)
-       
-       question.insert()
+      # Paginate
+      page = request.args.get('page', 1, type=int)
+      start = (page-1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
+      
+      # Display categories
+      categories = Category.query.all()
+      disc_categories = {category.id:category.type for category in categories}
+      
+      
+      question = Question(question=new_question, answer=new_answer,difficulty=new_difficulty, category=new_category)
+      question.insert()
+      
+      # Display questions
+      
+      questions=Question.query.all()
+      formatted_questions = [question.format() for question in questions]
+      
+      # Return jsonify to frontend
+      return jsonify({
+        'success': True,
+        'questions': formatted_questions[start:end],
+        'total_questions': len(formatted_questions),
+        'categories': disc_categories,
+        'current_category': None
+      })
+    #Handle error 422
+    except:
+      abort(422)
 
-       # Paginate
-       page = request.args.get('page', 1, type=int)
-       start = (page-1) * QUESTIONS_PER_PAGE
-       end = start + QUESTIONS_PER_PAGE
-       
-       # Display categories
-       categories = Category.query.all()
-       disc_categories = {category.id:category.type for category in categories}
-       
-       # Display questions
-       questions = Question.query.all()
-       formatted_questions = [question.format() for question in    questions]
-       
-       # Return jsonify to frontend
-       return jsonify({
-           'success': True,
-           'questions': formatted_questions[start:end],
-           'total_questions': len(formatted_questions),
-           'categories': disc_categories,
-           'current_category': None
-       })
-     #Handle error 422
-     except:
-       abort(422)
-
-
-
-
-
-
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
-
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
-
-  '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
-
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
-
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
-
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
-
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
-  
-  return app
+#'''
+# @TODO: 
+# Create a POST endpoint to get questions based on a search term. 
+# It should return any questions for whom the search term 
+# is a substring of the question. 
+#
+# TEST: Search by any phrase. The questions list will update to include 
+# only question that include that string within their question. 
+# Try using the word "title" to start. 
+# '''
+#
+# '''
+# @TODO: 
+# Create a GET endpoint to get questions based on category. 
+#
+# TEST: In the "List" tab / main screen, clicking on one of the 
+# categories in the left column will cause only questions of that 
+# category to be shown. 
+# '''
+#
+#
+# '''
+# @TODO: 
+# Create a POST endpoint to get questions to play the quiz. 
+# This endpoint should take category and previous question parameters 
+# and return a random questions within the given category, 
+# if provided, and that is not one of the previous questions. 
+#
+# TEST: In the "Play" tab, after a user selects "All" or a category,
+# one question at a time is displayed, the user is allowed to answer
+# and shown whether they were correct or not. 
+# '''
+#
+# '''
+# @TODO: 
+# Create error handlers for all expected errors 
+# including 404 and 422. 
+# '''
+# 
+# return app
 
     
