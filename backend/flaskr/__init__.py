@@ -51,7 +51,7 @@ def create_app(test_config=None):
   #Clicking on the page numbers should update the questions. 
   
 
-  @app.route('/questions', methods=['GET'])
+  @app.route('/questions/', methods=['GET'])
   def get_questions():
     #pagination
     page = request.args.get('page', 1, type=int)
@@ -143,7 +143,7 @@ def create_app(test_config=None):
       
       # Display questions
       
-      questions=Question.query.all()
+      questions=Question.query.order_by(Question.id.desc()).all()
       formatted_questions = [question.format() for question in questions]
       
       # Return jsonify to frontend
@@ -197,6 +197,6 @@ def create_app(test_config=None):
 # including 404 and 422. 
 # '''
 # 
-# return app
+  return app
 
     
