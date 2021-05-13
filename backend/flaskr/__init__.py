@@ -203,11 +203,13 @@ def create_app(test_config=None):
 #
 # TEST: In the "List" tab / main screen, clicking on one of the 
 # categories in the left column will cause only questions of that 
-# category to be shown. 
+# category to be shown.     
+
+      
 
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_by_category(category_id):
-
+ 
     try:
       
       questions_by= Question.query.filter(Question.category== str(category_id)).all()
@@ -228,10 +230,36 @@ def create_app(test_config=None):
     except:
         abort(422)
 
+#TODO (9/10): 
+# Create a POST endpoint to get questions to play the quiz. 
+# This endpoint should take category and previous question parameters 
+# and return a random questions within the given category, 
+# if provided, and that is not one of the previous questions. 
+#
+# TEST: In the "Play" tab, after a user selects "All" or a category,
+# one question at a time is displayed, the user is allowed to answer
+# and shown whether they were correct or not. 
 
+  @app.route('/quizzes', methods=['POST'])
+  def get_next_question():
+    try:
+      data = request.get_json()
+      quiz_category = data.get('quiz_category', None).get('id')
+      previousQuestions="hola"
+      #quiz_category = 4 #=> Tengo que asignar data del click
+      questions = Question.query.filter(Question.category==quiz_category).all()
+      formatted_question=[question.format() for question in questions]
+      last_question = len(formatted_question)
+      number= random.randint(0, (last_question + 1))
 
-
-
+      return jsonify({
+        'success': True,
+        #'previousQuestions':previousQuestions,
+        'question':formatted_question[number],
+        #'quiz_category': quiz_category
+      })
+    except:
+      abort(422)
 
   return app
 
@@ -249,15 +277,6 @@ def create_app(test_config=None):
 
 
 # '''
-# @TODO: 
-# Create a POST endpoint to get questions to play the quiz. 
-# This endpoint should take category and previous question parameters 
-# and return a random questions within the given category, 
-# if provided, and that is not one of the previous questions. 
-#
-# TEST: In the "Play" tab, after a user selects "All" or a category,
-# one question at a time is displayed, the user is allowed to answer
-# and shown whether they were correct or not. 
 # '''
 #
 # '''
