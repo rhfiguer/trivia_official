@@ -14,9 +14,9 @@ def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
-  #CORS(app)
+  CORS(app)
   #CORS(app, resources={"r*/api/*": {"origins": "*"}})
-  cors = CORS(app, resources={r"*": {"origins": "*"}})
+  #cors = CORS(app, resources={r"*": {"origins": "*"}})
  
 # TODO (2/10): Use the after_request decorator to set Access-Control-Allow
 
@@ -118,7 +118,8 @@ def create_app(test_config=None):
   #TEST: When you submit a question on the "Add" tab, 
   #the form will clear and the question will appear at the end of the last page
   #of the questions list in the "List" tab.  
-  # 
+  
+  # Set decorator
   @app.route('/questions', methods=['POST'])
   def add_question():
     try:
@@ -158,16 +159,52 @@ def create_app(test_config=None):
     except:
       abort(422)
 
-#'''
-# @TODO: 
+# TODO(7/10): 
 # Create a POST endpoint to get questions based on a search term. 
 # It should return any questions for whom the search term 
 # is a substring of the question. 
-#
+
 # TEST: Search by any phrase. The questions list will update to include 
 # only question that include that string within their question. 
 # Try using the word "title" to start. 
-# '''
+
+  @app.route('/search', methods=['POST'])
+  def submit_search():
+    try:
+      # Search by phrase. 
+      # Source to this solution: https://www.youtube.com/watch?v=2pbbUMmsWL0&ab_channel=Cairocoders
+      phrase = request.get_json() # Requesting the searchTerm
+      search_phrase = phrase.get('searchTerm', None) # Get searchTerm     
+      search_list = Question.query.filter(Question.question.like('%{}%'.format(search_phrase))).all() # Do the search within the Model
+    
+      # Display listed questions
+      searched_questions = [question.format() for question in search_list]
+      
+      # Paginate
+      page = request.args.get('page', 1, type=int)
+      start = (page-1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
+
+      # Return jsonify to frontend
+      return jsonify({
+        'success': True,
+        'questions': searched_questions[start:end],
+        'total_questions':len(searched_questions),
+        #'categories':disc_categories,
+        'current_category':None
+      })
+    
+    #Handle error 422
+    except:
+        abort(422)
+
+
+
+
+
+
+
+
 #
 # '''
 # @TODO: 
