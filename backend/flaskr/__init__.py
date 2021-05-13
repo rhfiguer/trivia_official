@@ -14,9 +14,9 @@ def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
-  CORS(app)
+  #CORS(app)
   #CORS(app, resources={"r*/api/*": {"origins": "*"}})
-  #cors = CORS(app, resources={r"*": {"origins": "*"}})
+  cors = CORS(app, resources={r"*": {"origins": "*"}})
  
 # TODO (2/10): Use the after_request decorator to set Access-Control-Allow
 
@@ -175,7 +175,7 @@ def create_app(test_config=None):
       # Source to this solution: https://www.youtube.com/watch?v=2pbbUMmsWL0&ab_channel=Cairocoders
       phrase = request.get_json() # Requesting the searchTerm
       search_phrase = phrase.get('searchTerm', None) # Get searchTerm     
-      search_list = Question.query.filter(Question.question.like('%{}%'.format(search_phrase))).all() # Do the search within the Model
+      search_list = Question.query.filter(Question.question.ilike('%{}%'.format(search_phrase))).all() # Do the search within the Model
     
       # Display listed questions
       searched_questions = [question.format() for question in search_list]
@@ -198,24 +198,56 @@ def create_app(test_config=None):
     except:
         abort(422)
 
-
-
-
-
-
-
-
-#
-# '''
-# @TODO: 
+# TODO (8/10): 
 # Create a GET endpoint to get questions based on category. 
 #
 # TEST: In the "List" tab / main screen, clicking on one of the 
 # categories in the left column will cause only questions of that 
 # category to be shown. 
-# '''
-#
-#
+
+  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+  def get_by_category(category_id):
+
+    try:
+      
+      questions_by= Question.query.filter(Question.category== str(category_id)).all()
+      formatted_questions = [question.format() for question in questions_by]
+      
+      # Paginate
+      page = request.args.get('page', 1, type=int)
+      start = (page-1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
+
+      return jsonify({
+      'success': True,
+      'questions':formatted_questions[start:end],
+      'total_questions':len(formatted_questions),
+      'current_category': None
+      })
+    #Handle error 422
+    except:
+        abort(422)
+
+
+
+
+
+
+  return app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # '''
 # @TODO: 
 # Create a POST endpoint to get questions to play the quiz. 
@@ -234,6 +266,6 @@ def create_app(test_config=None):
 # including 404 and 422. 
 # '''
 # 
-  return app
+  
 
     
