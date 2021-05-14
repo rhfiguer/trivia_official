@@ -89,7 +89,7 @@ def create_app(test_config=None):
       
       # Handle error 404
       if question is None:
-        abort(404)
+       abort(404)
       question.delete()
 
       # Paginate
@@ -161,9 +161,9 @@ def create_app(test_config=None):
         'categories': disc_categories,
         'current_category': None
       })
-    #Handle error 422
+    #Handle error 405
     except:
-      abort(422)
+      abort(405)
 
 # TODO(7/10): 
 # Create a POST endpoint to get questions based on a search term. 
@@ -202,16 +202,14 @@ def create_app(test_config=None):
     
     #Handle error 422
     except:
-        abort(422)
+        abort(404)
 
 # TODO (8/10): 
 # Create a GET endpoint to get questions based on category. 
 #
 # TEST: In the "List" tab / main screen, clicking on one of the 
 # categories in the left column will cause only questions of that 
-# category to be shown.     
-
-      
+# category to be shown.           
 
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_by_category(category_id):
@@ -274,7 +272,30 @@ def create_app(test_config=None):
 # @TODO(10/10): 
 # Create error handlers for all expected errors 
 # including 404 and 422. 
-# '''
-# 
+
+  @app.errorhandler(422)
+  def unprocessable_entity_error(error):
+    return jsonify({
+      "success": False,
+      "error": 422,
+      "message": "Unprocessable entity error"
+    }), 422
+
+  @app.errorhandler(405)
+  def method_not_allowed(error):
+    return jsonify({
+      "success": False,
+      "error": 405,
+      "message": "Method not allowed"
+    }), 405
+
+  @app.errorhandler(404) # SOURCE here: https://www.askpython.com/python-modules/flask/flask-error-handling
+  def not_found_error(error):
+    return jsonify({
+      "success": False,
+      "error": 404,
+      "message": "Not found error"
+    }), 404
+
   return app
 
