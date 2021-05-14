@@ -8,7 +8,8 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-# TODO (1/10): Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+# TODO (1/10): Set up CORS. Allow '*' for origins. 
+# Delete the sample route after completing the TODOs (!!DO NOT APPLY)
 
 def create_app(test_config=None):
   # create and configure the app
@@ -30,17 +31,18 @@ def create_app(test_config=None):
   # TODO (3/10): Create an endpoint to handle GET requests for all available categories.
   @app.route('/categories')
   def get_categories():
-    # No pagination
-    categories = Category.query.all()
-    disc_categories = {category.id: category.type for category in categories} # Changed method. Source here: https://knowledge.udacity.com/questions/503892
-   
+    try: 
+      # Get category display
+      categories = Category.query.all()
+      disc_categories = {category.id: category.type for category in categories} # SOURCE here: https://knowledge.udacity.com/questions/503892
     
-    return jsonify({
-      'success': True,
-      'categories': disc_categories,
-      'current_category': None
-    })
-
+      return jsonify({
+        'success': True,
+        'categories': disc_categories,
+        'current_category': None
+      })
+    except:
+      abort(422)
 
   #TODO (4/10): Create an endpoint to handle GET requests for questions, including pagination (every 10 questions). 
                 #This endpoint should return a list of questions, 
@@ -53,24 +55,28 @@ def create_app(test_config=None):
 
   @app.route('/questions/', methods=['GET'])
   def get_questions():
-    #pagination
-    page = request.args.get('page', 1, type=int)
-    start = (page-1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
+    try:
+      #pagination
+      page = request.args.get('page', 1, type=int)
+      start = (page-1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
+      
+      # Display categories
+      categories = Category.query.all()
+      disc_categories = {category.id:category.type for category in categories}
     
-    categories = Category.query.all()
-    disc_categories = {category.id:category.type for category in categories}
-   
-    questions = Question.query.all()
-    formatted_questions = [question.format() for question in    questions]
-    return jsonify({
-        'success': True,
-        'questions': formatted_questions[start:end],
-        'total_questions': len(formatted_questions),
-        'categories': disc_categories,
-        'current_category': None
-    })
-
+      # Display questions
+      questions = Question.query.all()
+      formatted_questions = [question.format() for question in    questions]
+      return jsonify({
+          'success': True,
+          'questions': formatted_questions[start:end],
+          'total_questions': len(formatted_questions),
+          'categories': disc_categories,
+          'current_category': None
+      })
+    except:
+      abort(422)
 
 
   #TODO (5/10): Create an endpoint to DELETE question using a question ID. 
@@ -243,48 +249,32 @@ def create_app(test_config=None):
   @app.route('/quizzes', methods=['POST'])
   def get_next_question():
     try:
+      # Get data from client interaction w/category in frontend
       data = request.get_json()
-      quiz_category = data.get('quiz_category', None).get('id')
-      previousQuestions="hola"
-      #quiz_category = 4 #=> Tengo que asignar data del click
+      quiz_category = data.get('quiz_category', None).get('id') # SOURCE UDACITY HELP: https://knowledge.udacity.com/questions/300810
+      previous_questions= [] # => Debo ir guardando preguntas para sacarlas del pull de opciones
+      
+      # Generate question list by selected category
       questions = Question.query.filter(Question.category==quiz_category).all()
       formatted_question=[question.format() for question in questions]
+      
+      # Generate random position within questions list to be displayed
       last_question = len(formatted_question)
-      number= random.randint(0, (last_question + 1))
+      random_number= random.randint(0, (last_question)) # SOURCE: https://www.pythonforbeginners.com/random/how-to-use-the-random-module-in-python
 
       return jsonify({
         'success': True,
         #'previousQuestions':previousQuestions,
-        'question':formatted_question[number],
+        'question':formatted_question[random_number],
         #'quiz_category': quiz_category
       })
     except:
       abort(422)
 
-  return app
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# '''
-# '''
-#
-# '''
-# @TODO: 
+# @TODO(10/10): 
 # Create error handlers for all expected errors 
 # including 404 and 422. 
 # '''
 # 
-  
+  return app
 
-    
