@@ -28,13 +28,17 @@ class TriviaTestCase(unittest.TestCase):
         self.category_id = {
             'type':1
         }
-
+        #SOURCE: https://knowledge.udacity.com/questions/583577
+        # IT MUST MATCH THE JSON.STRINGIFY 'S BODY IN QUESTIONVIEW
         self.searchTerm = {
             'searchTerm':'Question'
         }
 
-        self.quizCategory = {
-            'quizCategory': 1
+        #SOURCE: https://knowledge.udacity.com/questions/583696
+        # IT MUST MATCH THE JSON.STRINGIFY 'S BODY IN QUESTIONVIEW
+        self.quizCategory = {  
+            'previous_questions': [20,21],
+            'quiz_category':{'type':'Science', 'id':'1'}
         }
 
 
@@ -69,19 +73,19 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
 
     # Test delete question endpoint
-#   def test_delete_questions(self):
-#       res= self.client().delete('/questions/3')
-#       data = json.loads(res.data)
-#
-#       question = Question.query.filter(Question.id == 3).one_or_none()
-#
-#       self.assertEqual(res.status_code, 200)
-#       self.assertEqual(data['success'], True)
-#       self.assertEqual(data['deleted'], 3)
-#       self.assertTrue(data['questions'])
-#       self.assertTrue(data['total_questions'])
-#       self.assertTrue(data['categories'])
-#       self.assertEqual(question, None) # Question no longer exists
+    def test_delete_questions(self):
+        res= self.client().delete('/questions/4')
+        data = json.loads(res.data)
+
+        question = Question.query.filter(Question.id == 4).one_or_none()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], 4)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['categories'])
+        self.assertEqual(question, None) # Question no longer exists
 
     # Test error handle if deleting non existing question
     def test_422_if_question_does_not_exist(self):

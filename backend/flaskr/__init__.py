@@ -230,7 +230,7 @@ def create_app(test_config=None):
       'total_questions':len(formatted_questions),
       'current_category': None
       })
-    #Handle error 422
+    #Handle error 404
     except:
         abort(404)
 
@@ -262,9 +262,7 @@ def create_app(test_config=None):
 
       return jsonify({
         'success': True,
-        #'previousQuestions':previousQuestions,
         'question':formatted_question[random_number],
-        #'quiz_category': quiz_category
       })
     except:
       abort(404)
