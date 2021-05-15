@@ -25,12 +25,16 @@ class TriviaTestCase(unittest.TestCase):
             'category': 1
         }
 
+        self.new_category = {
+            'type':2
+        }
+
         self.search_phrase = {
             'search_phrase':'Question'
         }
 
         self.quiz_category = {
-            'category': 1
+            'category': 'a'
         }
 
 
@@ -114,7 +118,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
-        self.assertTrue(data['total_questions'])
+        self.assertEqual(data['total_questions'])
 
     # Test error handle if search not found
     def test_404_if_not_found(self):
@@ -127,7 +131,7 @@ class TriviaTestCase(unittest.TestCase):
     
     # Test display question by category endpoint
     def test_get_by_category(self):
-        res= self.client().get('/categories/1/questions')
+        res= self.client().get('/categories/2/questions')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -136,31 +140,31 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
 
     # Test error handle if non getting questions by category
-    def test_422_if_not_get_by_category(self):
-        res = self.client().get('/categories/1/questions')
+    def test_404_if_not_get_by_category(self):
+        res = self.client().get('/categories/a/questions')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'Unprocessable entity error')
+        self.assertEqual(data['message'], 'Not found error')
 
     # Test quizzes endpoint
-    def test_get_quiz(self):
-        res = self.client().post('/quizzes', json=self.quiz_category)
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['question'])
+   #def test_get_quiz(self):
+   #    res = self.client().post('/quizzes'), json= self.quiz_category)
+   #    data = json.loads(res.data)
+#
+   #    self.assertEqual(res.status_code, 200)
+   #    self.assertEqual(data['success'], True)
+   #    self.assertTrue(data['question'])
 
     # Test error handle if quiz not processable
-    def test_422_if_quiz_not_processable(self):
+    def test_404_if_quiz_not_processable(self):
         res = self.client().post('/quizzes/15', json=self.quiz_category)
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'Unprocessable entity error')
+        self.assertEqual(data['message'], 'Not found error')
    
    
     """

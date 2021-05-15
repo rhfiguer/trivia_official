@@ -232,7 +232,7 @@ def create_app(test_config=None):
       })
     #Handle error 422
     except:
-        abort(422)
+        abort(404)
 
 #TODO (9/10): 
 # Create a POST endpoint to get questions to play the quiz. 
@@ -267,7 +267,7 @@ def create_app(test_config=None):
         #'quiz_category': quiz_category
       })
     except:
-      abort(422)
+      abort(404)
 
 # @TODO(10/10): 
 # Create error handlers for all expected errors 
