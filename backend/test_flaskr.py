@@ -25,16 +25,16 @@ class TriviaTestCase(unittest.TestCase):
             'category': 1
         }
 
-        self.new_category = {
-            'type':2
+        self.category_id = {
+            'type':1
         }
 
-        self.search_phrase = {
-            'search_phrase':'Question'
+        self.searchTerm = {
+            'searchTerm':'Question'
         }
 
-        self.quiz_category = {
-            'category': 'a'
+        self.quizCategory = {
+            'quizCategory': 1
         }
 
 
@@ -112,17 +112,17 @@ class TriviaTestCase(unittest.TestCase):
 
     # Test search question endpoint
     def test_search(self):
-        res = self.client().post('/search', json=self.search_phrase)
+        res = self.client().post('/search', json=self.searchTerm)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
-        self.assertEqual(data['total_questions'])
+        self.assertTrue(data['total_questions'])
 
     # Test error handle if search not found
     def test_404_if_not_found(self):
-        res = self.client().post('/search/1', json=self.search_phrase)
+        res = self.client().post('/search/1', json=self.searchTerm)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
@@ -149,17 +149,18 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Not found error')
 
     # Test quizzes endpoint
-   #def test_get_quiz(self):
-   #    res = self.client().post('/quizzes'), json= self.quiz_category)
-   #    data = json.loads(res.data)
-#
-   #    self.assertEqual(res.status_code, 200)
-   #    self.assertEqual(data['success'], True)
-   #    self.assertTrue(data['question'])
+    def test_get_quiz(self):
+        #res = self.client().post('/quizzes'), json= self.category_id)
+        res = self.client().post('/quizzes', json=self.quizCategory)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
 
     # Test error handle if quiz not processable
     def test_404_if_quiz_not_processable(self):
-        res = self.client().post('/quizzes/15', json=self.quiz_category)
+        res = self.client().post('/quizzes/15', json=self.quizCategory)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
